@@ -2,6 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:layuot/pages/detail.dart';
 
+import 'package:http/http.dart' as http; //as http. ตั้งชื่อเล่น
+import 'dart:async';
+
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -20,21 +24,23 @@ class _HomePageState extends State<HomePage> {
         body: Padding(
           padding: const EdgeInsets.all(10.0),
           child: FutureBuilder(
-            builder: (context,snapshot) {
-              var data = json.decode(snapshot.data.toString());// class json ต้อง import[{},{},{}] เป็นก้อนๆ
+            builder: (context,AsyncSnapshot snapshot) {//AsyncSnapshot มันไม่รู้เป็นไฟฟลอะไร เลยต้องใส่ AsyncSnapshot
+              //var data = json.decode(snapshot.data.toString());// class json ต้อง import[{},{},{}] เป็นก้อนๆ
+              
               return ListView.builder(
                 itemBuilder: (BuildContext context,int index){
                   return Column(
                     children: [
-                      Mybox(data[index]['title'],data[index]['subtitle'],data[index]['image_url'],data[index]['detail']),
+                      Mybox(snapshot.data[index]['title'],snapshot.data[index]['subtitle'],snapshot.data[index]['image_url'],snapshot.data[index]['detail']),
                       const SizedBox(height:12)
                     ],
                   );
                 },
-                itemCount: data.length,
+                itemCount: snapshot.data.length,
                 );
             },
-            future: DefaultAssetBundle.of(context).loadString('assets/data.json'),
+            //future: DefaultAssetBundle.of(context).loadString('assets/data.json'),เอาจากเครื่องเรา
+            future: getData()
           )
         ));
   }
@@ -59,31 +65,43 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(15),
       ),
 
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.start, //start center end
-          crossAxisAlignment: CrossAxisAlignment
-              .start, //เเนวนอนที่เราต่องการจะอยู่เเนวไหน start center end
-          children: [
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 25,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Text(subtitle, style: const TextStyle(fontSize: 13, color: Colors.white)),
-            const SizedBox(height: 7),
-            TextButton(
-              onPressed: () {
-                print("next page");
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>  DetailPage(v1,v2,v3,v4),
-                    )); //ใส่context เพื่อให้มีปุ่มback
-              },
-              child: const Text("อ่านต่อ..."),
-            )
-          ]),
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.start, //start center end
+            crossAxisAlignment: CrossAxisAlignment
+                .start, //เเนวนอนที่เราต่องการจะอยู่เเนวไหน start center end
+            children: [
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 25,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Text(subtitle, style: const TextStyle(fontSize: 13, color: Colors.white)),
+              const SizedBox(height: 7),
+              TextButton(
+                onPressed: () {
+                  print("next page");
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>  DetailPage(v1,v2,v3,v4),
+                      )); //ใส่context เพื่อให้มีปุ่มback
+                },
+                child: const Text("อ่านต่อ..."),
+              )
+            ]),
+      ),
     );
+  }
+  
+  Future getData() async{
+    //https://raw.githubusercontent.com/zawaneemakeng/BasicAPI/main/data.json
+    var url = Uri.https('raw.githubusercontent.com','zawaneemakeng/BasicAPI/main/data.json');
+    var  response = await http.get(url);
+    var result = json.decode(response.body);
+    return result;
+
   }
 }
